@@ -1,0 +1,71 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 max-w-3xl">
+  <h1 class="text-4xl font-bold text-gold-400 mb-8 text-center animate-fade-in">Help Center</h1>
+  <p class="text-offwhite-100 text-center mb-8 animate-slide-up">
+    Need assistance with your blogging journey? Check out our FAQs or reach out for personalized help!
+  </p>
+
+  <!-- FAQ Section -->
+  <div class="space-y-4 animate-slide-up" style="animation-delay: 0.2s;">
+    <div class="bg-charcoal-900 p-6 rounded-2xl shadow-xl">
+      <button class="w-full text-left text-lg font-semibold text-offwhite-100 flex justify-between items-center focus:outline-none" onclick="toggleFAQ(this)">
+        <span>How do I create a new blog post?</span>
+        <svg class="w-6 h-6 text-gold-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div class="faq-content hidden mt-4 text-gray-300">
+        <p>Click the "Create Story" link in the navigation bar, fill out the form with your title, content, image, and category, then hit "Publish Story." Need more help? <a href="mailto:demo-help@spicyblog.com?subject=Help%20with%20Creating%20Post%20-%20Spicy%20Blog" class="text-gold-400 hover:text-orange-500">Email us</a>.</p>
+      </div>
+    </div>
+
+    <div class="bg-charcoal-900 p-6 rounded-2xl shadow-xl">
+      <button class="w-full text-left text-lg font-semibold text-offwhite-100 flex justify-between items-center focus:outline-none" onclick="toggleFAQ(this)">
+        <span>How do I edit or delete a post?</span>
+        <svg class="w-6 h-6 text-gold-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div class="faq-content hidden mt-4 text-gray-300">
+        <p>Go to the blog post detail page, where you’ll find "Edit" or "Delete" options if you’re the author. Follow the prompts to update or remove your post. Questions? <a href="mailto:demo-help@spicyblog.com?subject=Help%20with%20Editing%20Post%20-%20Spicy%20Blog" class="text-gold-400 hover:text-orange-500">Contact us</a>.</p>
+      </div>
+    </div>
+
+    <div class="bg-charcoal-900 p-6 rounded-2xl shadow-xl">
+      <button class="w-full text-left text-lg font-semibold text-offwhite-100 flex justify-between items-center focus:outline-none" onclick="toggleFAQ(this)">
+        <span>Why isn’t my image uploading?</span>
+        <svg class="w-6 h-6 text-gold-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div class="faq-content hidden mt-4 text-gray-300">
+        <p>Ensure your image is under 5MB and in a supported format (JPG, PNG). Try a different browser or device. Still stuck? <a href="mailto:demo-help@spicyblog.com?subject=Help%20with%20Image%20Upload%20-%20Spicy%20Blog" class="text-gold-400 hover:text-orange-500">Email our support team</a>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact for More Help -->
+  <div class="mt-8 text-center animate-slide-up" style="animation-delay: 0.4s;">
+    <p class="text-offwhite-100 mb-4">Didn’t find what you need? Let’s spice up your blogging experience!</p>
+    <a href="mailto:demo-help@spicyblog.com?subject=Help%20Request%20-%20Spicy%20Blog" class="px-6 py-2 bg-gradient-to-r from-crimson-600 to-orange-500 text-offwhite-100 rounded-lg hover:from-crimson-700 hover:to-orange-600 transition duration-300">
+      Contact Support
+    </a>
+  </div>
+</div>
+
+<!-- Custom Styles -->
+
+
+<!-- JavaScript for FAQ Toggle -->
+<script>
+  function toggleFAQ(button) {
+    const content = button.nextElementSibling;
+    const svg = button.querySelector('svg');
+    content.classList.toggle('open');
+    svg.classList.toggle('rotate-180');
+  }
+</script>
+{% endblock %}

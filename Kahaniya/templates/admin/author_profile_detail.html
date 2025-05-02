@@ -1,0 +1,55 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+{%include '_messages.html'%}
+<div class="max-w-4xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
+    <h2 class="text-3xl font-bold text-gray-800 mb-6">👤 Author Profile: {{ author.user.username }}</h2>
+
+    <!-- Author Info Card -->
+    <div class="bg-teal-800-50 border border-gray-200 rounded-lg p-4 mb-6">
+        <p>
+            <strong class="text-gray-600">Full Name:</strong>
+            <span class="text-teal-700 font-semibold">{{ author.name }}</span>
+        </p>
+        <p>
+            <strong class="text-gray-600">Email:</strong>
+            <span class="text-blue-700 font-semibold">{{ author.email }}</span>
+        </p>
+        <p>
+            <strong class="text-gray-600">Bio:</strong>
+            <span class="text-purple-700 font-medium">{{ author.bio }}</span>
+        </p>
+    </div>
+
+    <!-- Posts Section -->
+    <div class="mb-6">
+        <h3 class="text-2xl font-semibold text-gray-700 mb-2">📝 Posts</h3>
+        <ul class="list-disc ml-6 space-y-1">
+            {% for post in posts %}
+                <li><a href="{% url 'blog_detail' post.id %}" class="text-blue-600 hover:underline">{{ post.title }}</a></li>
+            {% empty %}
+                <li class="text-gray-400">No posts yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Comments Section -->
+    <div class="mb-6">
+        <h3 class="text-2xl font-semibold text-gray-700 mb-2">💬 Comments</h3>
+        <ul class="list-disc ml-6 space-y-1">
+            {% for comment in comments %}
+                <li class="text-gray-600 italic">"{{ comment.body|truncatewords:10 }}"</li>
+            {% empty %}
+                <li class="text-gray-400">No comments yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Admin Actions -->
+    <form method="post" class="flex justify-end gap-4 mt-4">
+        {% csrf_token %}
+        <button name="action" value="remove_author" class="bg-yellow-600 hover:bg-yellow-700 text-white px-5 py-2 rounded-lg">⚠️ Revoke Author</button>
+        <button name="action" value="ban" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg">🚫 Ban User</button>
+    </form>
+</div>
+{% endblock %}

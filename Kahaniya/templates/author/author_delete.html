@@ -1,0 +1,18 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    {% include '_messages.html' %}
+    <h1 class="text-3xl font-bold text-white mb-6">Delete Author Profile</h1>
+    <div class="max-w-lg mx-auto bg-gray-800 p-6 rounded-lg shadow-lg">
+        <p class="text-gray-300 mb-4">Are you sure you want to delete your author profile? This action cannot be undone.</p>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="flex space-x-4">
+                <button type="submit" class="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-200">Delete Profile</button>
+                <a href="{% url 'author_profile' author_id=user.author.id %}" class="flex-1 text-center bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

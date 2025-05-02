@@ -1,0 +1,25 @@
+{% if messages %}
+<div class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md">
+    {% for message in messages %}
+        <div class="message-alert px-4 py-3 rounded shadow-md mb-3 text-white 
+                    {% if message.tags == 'error' %}bg-red-500
+                    {% elif message.tags == 'success' %}bg-green-500
+                    {% else %}bg-gray-700{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const alerts = document.querySelectorAll('.message-alert');
+        setTimeout(() => {
+            alerts.forEach(alert => {
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500); // Remove after fade-out
+            });
+        }, 4000); // Auto-hide after 4 seconds
+    });
+</script>
+{% endif %}

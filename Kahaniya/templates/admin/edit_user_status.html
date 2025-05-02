@@ -1,0 +1,33 @@
+{% extends "base_auth.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-6">Edit User - {{ user.user.username }}</h1>
+    <form method="post" class="space-y-6 bg-violet-700 shadow-lg rounded-lg p-6">
+        {% csrf_token %}
+
+        <div>
+            <label class="inline-flex items-center">
+                <input type="checkbox" name="is_author" class="form-checkbox" {% if user.is_author %}checked{% endif %}>
+                <span class="ml-2">Is Author</span>
+            </label>
+        </div>
+
+        <div>
+            <label class="inline-flex items-center">
+                <input type="checkbox" name="is_banned" class="form-checkbox" {% if user.is_ban %}checked{% endif %}>
+                <span class="ml-2">Is Banned</span>
+            </label>
+        </div>
+
+        <div>
+            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                Save Changes
+            </button>
+            <a href="{% url 'admin_panel' %}" class="ml-4 text-gray-600 hover:underline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

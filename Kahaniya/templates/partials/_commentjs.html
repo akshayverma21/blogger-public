@@ -1,0 +1,128 @@
+
+<script>
+
+// Toggle more options menu
+function toggleMoreMenu(menuId) {
+    const menu = document.getElementById(menuId);
+    menu.classList.toggle('hidden');
+    // Close other menus
+    document.querySelectorAll('[id^="more-menu-"]').forEach(otherMenu => {
+        if (otherMenu !== menu && !otherMenu.classList.contains('hidden')) {
+            otherMenu.classList.add('hidden');
+        }
+    });
+}
+
+// Toggle edit form
+function toggleEditForm(formId) {
+    const form = document.getElementById(formId);
+    if (!form) {
+        console.error('Edit form not found:', formId);
+        return;
+    }
+    const commentBody = form.closest('.comment-container').querySelector('.comment-body');
+    form.classList.toggle('hidden');
+    commentBody.classList.toggle('hidden');
+    if (!form.classList.contains('hidden')) {
+        const textarea = form.querySelector('textarea');
+        textarea.focus();
+        autoResizeTextarea(textarea);
+        // Close reply form if open
+        const replyForm = form.closest('.comment-container').querySelector('.reply-form');
+        if (replyForm && !replyForm.classList.contains('hidden')) {
+            resetReplyForm(replyForm.querySelector('.reply-form-buttons button'));
+        }
+        // Close more menu
+        const moreMenu = form.closest('.comment-container').querySelector('[id^="more-menu-"]');
+        if (moreMenu) {
+            moreMenu.classList.add('hidden');
+        }
+    }
+}
+
+// Reset edit form
+function resetEditForm(button) {
+    const form = button.closest('.edit-form');
+    const commentBody = form.closest('.comment-container').querySelector('.comment-body');
+    const textarea = form.querySelector('textarea');
+    textarea.value = textarea.defaultValue; // Restore original text
+    textarea.style.height = 'auto';
+    form.classList.add('hidden');
+    commentBody.classList.remove('hidden');
+    form.querySelector('.edit-form-buttons').classList.add('hidden');
+}
+
+// Toggle reply form
+function toggleReplyForm(formId) {
+    const form = document.getElementById(formId);
+    form.classList.toggle('hidden');
+    const textarea = form.querySelector('textarea');
+    if (!form.classList.contains('hidden')) {
+        textarea.focus();
+        autoResizeTextarea(textarea);
+        // Close edit form if open
+        const editForm = form.closest('.comment-container').querySelector('.edit-form');
+        if (editForm && !editForm.classList.contains('hidden')) {
+            resetEditForm(editForm.querySelector('.edit-form-buttons button'));
+        }
+    }
+}
+
+// Auto-resize textarea and toggle buttons
+function autoResizeTextarea(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
+    const buttons = textarea.closest('form').querySelector('.reply-form-buttons, .edit-form-buttons');
+    if (buttons) {
+        buttons.classList.toggle('hidden', !textarea.value.trim());
+    }
+}
+
+// Reset reply form
+function resetReplyForm(button) {
+    const form = button.closest('.reply-form');
+    const textarea = form.querySelector('textarea');
+    textarea.value = '';
+    textarea.style.height = 'auto';
+    form.classList.add('hidden');
+    form.querySelector('.reply-form-buttons').classList.add('hidden');
+}
+
+// Toggle replies visibility
+function toggleReplies(repliesId) {
+    const replies = document.getElementById(repliesId);
+    replies.classList.toggle('hidden');
+    const button = replies.previousElementSibling;
+    const svg = button.querySelector('svg');
+    svg.classList.toggle('rotate-180');
+}
+
+// Close forms and menus on outside click
+document.addEventListener('click', (event) => {
+    // Exclude clicks on the "Like" button form
+    if (event.target.closest('form[action*="toggle_like"]')) {
+        return; // Do nothing if the click is on a "Like" form
+    }
+
+    document.querySelectorAll('[id^="more-menu-"]').forEach(menu => {
+        if (!menu.classList.contains('hidden') && !event.target.closest('.relative')) {
+            menu.classList.add('hidden');
+        }
+    });
+    document.querySelectorAll('.reply-form').forEach(form => {
+        if (!form.classList.contains('hidden') && !event.target.closest('.reply-form') && !event.target.closest('[onclick*="toggleReplyForm"]')) {
+            resetReplyForm(form.querySelector('.reply-form-buttons button'));
+        }
+    });
+    document.querySelectorAll('.edit-form').forEach(form => {
+        if (!form.classList.contains('hidden') && !event.target.closest('.edit-form') && !event.target.closest('[onclick*="toggleEditForm"]')) {
+            resetEditForm(form.querySelector('.edit-form-buttons button'));
+        }
+    });
+});
+
+// Initialize textareas
+document.querySelectorAll('textarea').forEach(textarea => {
+    textarea.addEventListener('input', () => autoResizeTextarea(textarea));
+});
+</script>

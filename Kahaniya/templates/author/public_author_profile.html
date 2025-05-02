@@ -1,0 +1,219 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">
+    <div class="bg-gray-900 rounded-xl shadow-2xl p-6">
+        <!-- Profile Header -->
+        <div class="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8">
+            <!-- Profile Picture -->
+            <div class="flex-shrink-0">
+                <img src="{{ author_profile.profile_photo.url }}" alt="{{ author_profile.name }}'s profile photo" 
+                     class="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-teal-500 object-cover">
+            </div>
+            <!-- Profile Info -->
+            <div class="flex-1 text-center md:text-left">
+                <div class="flex flex-col items-center md:items-start">
+                    <h1 class="text-2xl md:text-3xl font-bold text-white">{{ author_profile.name }}</h1>
+                    {% if author_profile.is_approved %}
+                    <span
+                    class="inline-flex items-center text-sm font-semibold px-3 py-1 rounded-md bg-teal-600 text-white mt-2 cursor-pointer relative group">
+                    Author
+                    <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block bg-gray-800 text-xs text-teal-400 rounded px-2 py-1 shadow-lg z-20">
+                        Verified Author
+                    </span>
+                    </span>
+                    {% endif %}
+                </div>
+                <!--<p class="text-gray-400 text-sm mt-2 max-w-2xl">{{ author_profile.bio }}</p>
+                <p class="text-gray-500 text-xs mt-1">Email: {{ author_profile.email }}</p>
+                <!-- Follower/Following Counts -->
+                <div class="flex justify-center md:justify-start gap-6 mt-4">
+                    <a href="{% url 'follower_list' username=author_profile.user.username %}" 
+                       class="text-gray-300 hover:text-teal-400 transition duration-200">
+                        <span class="font-semibold">{{ author_profile.followers.count }}</span> 
+                        <span class="text-sm">Followers</span>
+                        
+                    </a>
+                    <a href="{% url 'following_list' username=author_profile.user.username %}" 
+                       class="text-gray-300 hover:text-teal-400 transition duration-200">
+                        <span class="font-semibold">{{ author_profile.user.following.count }}</span> 
+                        <span class="text-sm">Following</span>
+                        
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Actions (Follow/Unfollow) -->
+        {% if user.is_authenticated and user.author.id != author_profile.id %}
+        <div id="follow-unfollow-container" class="flex justify-center md:justify-start gap-3 mb-8">
+            {% if is_following %}
+                <form id="unfollow-form" action="{% url 'unfollow_author' author_id=author_profile.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" 
+                            class="flex items-center bg-gray-700 text-white px-4 py-2 rounded-full hover:bg-gray-600 transition duration-200 text-sm font-medium">
+                        <i class="fas fa-user-minus mr-2"></i> Unfollow
+                    </button>
+                </form>
+            {% else %}
+                <form id="follow-form" action="{% url 'follow_author' author_id=author_profile.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" 
+                            class="flex items-center bg-teal-600 text-white px-4 py-2 rounded-full hover:bg-teal-500 transition duration-200 text-sm font-medium">
+                        <i class="fas fa-user-plus mr-2"></i> Follow
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Tab Navigation -->
+        <div class="border-b border-gray-700 mb-6">
+            <ul class="flex flex-wrap justify-center md:justify-start gap-4 text-sm font-medium text-gray-400">
+                <li>
+                    <a href="#overview" 
+                       class="tab-link flex items-center px-4 py-2 border-b-2 border-transparent hover:text-white hover:border-teal-500 transition duration-200 active">
+                        <i class="fas fa-user mr-2"></i> Overview
+                    </a>
+                </li>
+                <li>
+                    <a href="#posts" 
+                       class="tab-link flex items-center px-4 py-2 border-b-2 border-transparent hover:text-white hover:border-teal-500 transition duration-200">
+                        <i class="fas fa-th mr-2"></i> Posts
+                    </a>
+                </li>
+                <li>
+                    <a href="#comments" 
+                       class="tab-link flex items-center px-4 py-2 border-b-2 border-transparent hover:text-white hover:border-teal-500 transition duration-200">
+                        <i class="fas fa-comment mr-2"></i> Comments
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Overview Tab -->
+            <div id="overview" class="tab-pane">
+                <h2 class="text-xl font-semibold text-white mb-4">Overview</h2>
+                <p class="text-gray-400 mb-6">A summary of {{ author_profile.name }}'s activity.</p>
+                {% if posts %}
+                    <h3 class="text-lg font-medium text-white mb-3">Recent Posts</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% for post in posts|slice:":3" %}
+                            <div class="bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition duration-200 overflow-hidden">
+                                {% if post.blog_image %}
+                                    <img src="{{ post.blog_image.url }}" alt="{{ post.title }}" 
+                                         class="w-full h-40 object-cover">
+                                {% endif %}
+                                <div class="p-4">
+                                    <h4 class="text-teal-400 font-medium text-base">{{ post.title|truncatechars:30 }}</h4>
+                                    <p class="text-gray-400 text-sm mt-2">{{ post.content|truncatewords:15 }}</p>
+                                    <a href="{% url 'blog_detail' post.id %}" 
+                                       class="text-teal-500 hover:underline text-sm mt-3 inline-block">Read More</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-500 text-sm">No posts yet.</p>
+                {% endif %}
+                {% if comments %}
+                    <h3 class="text-lg font-medium text-white mb-3 mt-8">Recent Comments</h3>
+                    <div class="space-y-4">
+                        {% for comment in comments|slice:":3" %}
+                            <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+                                <p class="text-gray-400 text-sm">{{ comment.body|truncatewords:20 }}</p>
+                                {% if comment.content_object %}
+                                    <a href="{% url 'blog_detail' comment.content_object.id %}" 
+                                       class="text-teal-500 hover:underline text-sm mt-2 inline-block">View Post</a>
+                                {% else %}
+                                    <p class="text-gray-500 text-sm">Post not available</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-500 text-sm mt-4">No comments yet.</p>
+                {% endif %}
+            </div>
+
+            <!-- Posts Tab -->
+            <div id="posts" class="tab-pane hidden">
+                <h2 class="text-xl font-semibold text-white mb-4">Posts</h2>
+                {% if posts %}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% for post in posts %}
+                            <div class="bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition duration-200 overflow-hidden">
+                                {% if post.blog_image %}
+                                    <img src="{{ post.blog_image.url }}" alt="{{ post.title }}" 
+                                         class="w-full h-40 object-cover">
+                                {% endif %}
+                                <div class="p-4">
+                                    <h4 class="text-teal-400 font-medium text-base">{{ post.title|truncatechars:30 }}</h4>
+                                    <p class="text-gray-400 text-sm mt-2">{{ post.content|truncatewords:15 }}</p>
+                                    <a href="{% url 'blog_detail' post.id %}" 
+                                       class="text-teal-500 hover:underline text-sm mt-3 inline-block">Read More</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-500 text-sm">No posts yet.</p>
+                {% endif %}
+            </div>
+
+            <!-- Comments Tab -->
+            <div id="comments" class="tab-pane hidden">
+                <h2 class="text-xl font-semibold text-white mb-4">Comments</h2>
+                {% if comments %}
+                    <div class="space-y-4">
+                        {% for comment in comments %}
+                            <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+                                <p class="text-gray-400 text-sm">{{ comment.body|truncatewords:20 }}</p>
+                                {% if comment.content_object %}
+                                    <a href="{% url 'blog_detail' comment.content_object.id %}" 
+                                       class="text-teal-500 hover:underline text-sm mt-2 inline-block">View Post</a>
+                                {% else %}
+                                    <p class="text-gray-500 text-sm">Post not available</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-500 text-sm">No comments yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Tab Switching -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('.tab-link');
+    const panes = document.querySelectorAll('.tab-pane');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Update tab styles
+            tabs.forEach(t => {
+                t.classList.remove('active', 'border-teal-500', 'text-white');
+                t.classList.add('text-gray-400');
+            });
+            tab.classList.add('active', 'border-teal-500', 'text-white');
+            tab.classList.remove('text-gray-400');
+
+            // Show/hide panes
+            panes.forEach(pane => pane.classList.add('hidden'));
+            const targetPane = document.querySelector(tab.getAttribute('href'));
+            if (targetPane) {
+                targetPane.classList.remove('hidden');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

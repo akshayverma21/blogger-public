@@ -1,0 +1,83 @@
+{% extends "base_auth.html" %}
+{% load static %}
+{% load i18n %}
+{% load account %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="flex min-h-screen w-full flex-col justify-center bg-[#121212] px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mx-auto w-full max-w-md">
+        <!-- Logo -->
+        <div class="flex justify-center">
+            <img class="h-12 w-auto" src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600" alt="Kahaniya">
+        </div>
+        <h2 class="mt-8 text-center text-3xl font-bold tracking-tight text-white sm:text-4xl">Create your account</h2>
+    </div>
+
+    <div class="mx-auto mt-10 w-full max-w-md">
+        <form class="space-y-6" method="POST" action="{% url 'account_signup' %}">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            <!-- Email Field -->
+            <div>
+                <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-300">Email</label>
+                <div class="mt-2">
+                    {{ form.email|add_class:"block w-full rounded-lg bg-[#1e1e1e] px-4 py-3 text-base text-white border border-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200 sm:text-sm" }}
+                    {% for error in form.email.errors %}
+                        <p class="mt-1 text-sm text-red-500">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Username Field -->
+            <div>
+                <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-300">Username</label>
+                <div class="mt-2">
+                    {{ form.username|add_class:"block w-full rounded-lg bg-[#1e1e1e] px-4 py-3 text-base text-white border border-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200 sm:text-sm" }}
+                    {% for error in form.username.errors %}
+                        <p class="mt-1 text-sm text-red-500">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Password Field -->
+            <div>
+                <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-300">Password</label>
+                <div class="mt-2">
+                    {{ form.password1|add_class:"block w-full rounded-lg bg-[#1e1e1e] px-4 py-3 text-base text-white border border-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200 sm:text-sm" }}
+                    {% for error in form.password1.errors %}
+                        <p class="mt-1 text-sm text-red-500">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div>
+                <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-gray-300">Confirm Password</label>
+                <div class="mt-2">
+                    {{ form.password2|add_class:"block w-full rounded-lg bg-[#1e1e1e] px-4 py-3 text-base text-white border border-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200 sm:text-sm" }}
+                    {% for error in form.password2.errors %}
+                        <p class="mt-1 text-sm text-red-500">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+            {% endif %}
+
+            <!-- Submit Button -->
+            <div>
+                <button type="submit" class="flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-3 text-base font-semibold text-white hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition duration-200 sm:text-sm">Sign up</button>
+            </div>
+        </form>
+
+        <!-- Login Link -->
+        <p class="mt-8 text-center text-sm text-gray-400">
+            Already have an account?
+            <a href="{% url 'account_login' %}" class="font-semibold text-indigo-500 hover:text-indigo-400 transition duration-200">Sign in</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

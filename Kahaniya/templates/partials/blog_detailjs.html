@@ -1,0 +1,50 @@
+<script>
+    function toggleAuthorMenu() {
+        const menu = document.getElementById("author-menu");
+        menu.classList.toggle("hidden");
+        document.addEventListener("click", function(e) {
+            if (!menu.contains(e.target) && !e.target.closest("[onclick='toggleAuthorMenu()']")) {
+                menu.classList.add("hidden");
+            }
+        }, { once: true });
+    }
+    
+    function togglePostMenu(menuId) {
+        const menu = document.getElementById(menuId);
+        menu.classList.toggle("hidden");
+        document.addEventListener("click", function(e) {
+            if (!menu.contains(e.target) && !e.target.closest("[onclick*='togglePostMenu']")) {
+                menu.classList.add("hidden");
+            }
+        }, { once: true });
+    }
+
+    // Show/hide comment form buttons and enable/disable submit
+    document.querySelectorAll('textarea[name="body"]').forEach(textarea => {
+        textarea.addEventListener('input', function () {
+            const buttons = this.parentElement.querySelector('.comment-form-buttons');
+            const submitButton = buttons.querySelector('button[type="submit"]');
+            buttons.classList.toggle('hidden', !this.value);
+            submitButton.disabled = !this.value.trim();
+        });
+    });
+
+    // Reset comment form
+    function resetCommentForm(button) {
+        const form = button.closest('form');
+        const textarea = form.querySelector('textarea');
+        textarea.value = '';
+        textarea.rows = 1;
+        form.querySelector('.comment-form-buttons').classList.add('hidden');
+        form.querySelector('button[type="submit"]').disabled = true;
+    }
+
+    // Copy link to clipboard for share button
+    function copyToClipboard(url) {
+        navigator.clipboard.write(url).then(() => {
+            alert('Link copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+        });
+    }
+</script>

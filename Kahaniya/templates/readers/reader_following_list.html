@@ -1,0 +1,50 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <h2 class="text-xl font-bold mb-4">{{ profile_user.username }} is Following ({{ following_count }})</h2>
+
+    {% if following_authors %}
+        {% for followed in following_authors %}
+            <div class="flex items-center justify-between gap-4 p-4 mb-3 bg-white rounded-lg shadow-sm">
+                <div class="flex items-center gap-3">
+                    {% if followed.profile_photo %}
+                        <img src="{{ followed.profile_photo.url }}" alt="{{ followed.name|default:followed.user.username }}" class="w-12 h-12 rounded-full object-cover">
+                    {% else %}
+                        <div class="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold">
+                            {{ followed.name|default:followed.user.username|first|upper }}
+                        </div>
+                    {% endif %}
+
+                    <div>
+                        <a href="{% url 'author_profile' followed.id %}" class="font-semibold hover:underline">
+                            {{ followed.name|default:followed.user.username }}
+                        </a>
+                        <p class="text-sm text-gray-500">@{{ followed.user.username }}</p>
+                    </div>
+                </div>
+
+                {% if request.user.is_authenticated and request.user != followed.user %}
+                    {% if followed.id in user_following_id %}
+                        <form method="post" action="{% url 'unfollow_author' author_id=followed.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="px-4 py-1.5 bg-gray-100 text-sm text-gray-700 rounded-full hover:bg-gray-200 transition">
+                                <i class="fas fa-user-check mr-1 text-green-500"></i> Following
+                            </button>
+                        </form>
+                    {% else %}
+                        <form method="post" action="{% url 'follow_author' author_id=followed.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="px-4 py-1.5 bg-teal-600 text-sm text-white rounded-full hover:bg-teal-500 transition">
+                                <i class="fas fa-user-plus mr-1"></i> Follow
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-gray-500">Not following any authors yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

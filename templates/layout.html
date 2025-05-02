@@ -1,0 +1,530 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Kahaniya</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'static/css/styles.css' %}">
+    <style>
+        .profile-dropdown {
+            display: none;
+        }
+        .profile-dropdown.open {
+            display: block;
+        }
+        .saved-posts-submenu {
+            display: none;
+        }
+        .saved-posts-submenu.open {
+            display: block;
+        }
+        main {
+            min-height: calc(100vh - 80px - 64px);
+        }
+        #sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        #sidebar.open {
+            transform: translateX(0);
+        }
+        .comment-container {
+            position: relative;
+        }
+        .comment-container .bg-gray-800 {
+            background-color: #2d3748; /* Slightly darker background for replies */
+        }
+        .comment-container .replies-container {
+            border-left: 2px solid #4a5568; /* Optional: Add a vertical line to indicate reply hierarchy */
+            padding-left: 1rem;
+        }
+        .comment-container {
+            background: none;
+            border: none;
+            box-shadow: none;
+        }
+        /* Adjust search bar positioning on desktop */
+        @media (min-width: 640px) {
+            .search-container {
+                margin-left: -10rem; /* Shift search bar slightly to the left on desktop */
+            }
+        }
+        /* Ensure no overflow on mobile */
+        @media (max-width: 639px) {
+            body {
+                overflow-x: hidden;
+            }
+            .profile-dropdown {
+                width: 80vw; /* Make dropdown fit mobile screen */
+                right: 1rem;
+            }
+            .saved-posts-submenu {
+                width: 80vw; /* Match dropdown width */
+                left: -80vw; /* Position to the left of the dropdown */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col">
+    
+    <nav class="bg-gray-800 p-4 shadow flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <button id="sidebarToggle" class="text-gray-300 hover:text-teal-400">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+            <div class="text-xl font-bold flex items-center space-x-4">
+                <a href="{% url 'blog_home' %}" class="hover:text-teal-400">Kahaniya</a>
+                {% if user.is_authenticated and user.is_staff %}
+                    <a href="{% url 'admin_panel' %}" class="text-sm hover:text-teal-400 transition duration-200">Admin Panel</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex-1 max-w-lg mx-4 hidden sm:block search-container">
+            <form action="{% url 'search_list' %}" method="GET" class="relative">
+                <input type="text" name="q" placeholder="Search Kahaniya..."
+                       class="w-full rounded-lg bg-gray-800 px-4 py-2 pl-10 text-sm text-white border border-gray-600
+                       placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-teal-500 transition duration-200"
+                       aria-label="Search Kahaniya">
+                <button type="submit" class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 hover:text-teal-400">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+        <div class="sm:hidden">
+            <button id="mobileSearchToggle" class="text-gray-300 hover:text-teal-400">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </button>
+        </div>
+
+        <div id="mobileSearch" class="sm:hidden hidden w-full absolute left-0 top-16 bg-gray-800 p-4">
+            <form action="{% url 'search_list' %}" method="GET" class="relative">
+                <input type="text" name="q" placeholder="Search Kahaniya..."
+                       class="w-full rounded-lg bg-gray-800 px-4 py-2 pl-10 text-sm text-white border border-gray-600
+                       placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-teal-500 transition duration-200"
+                       aria-label="Search Kahaniya">
+                <button type="submit" class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 hover:text-teal-400">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            {% if user.is_authenticated %}
+                <div class="relative profile-container">
+                    <button id="profileToggle" class="flex items-center">
+                        <div class="h-8 w-8 rounded-full bg-teal-500 flex items-center justify-center text-white text-sm font-bold">
+                            {{ user.email|slice:":1"|upper }}
+                        </div>
+                    </button>
+                    
+                    <div class="profile-dropdown absolute right-0 mt-2 w-48 bg-gray-700 rounded-lg shadow-lg py-2 z-10">
+                        <div class="flex items-center px-4 mb-3">
+                            {% if user.author and user.author.is_approved %}
+                                <img src="{{ user.author.profile_photo.url|default_if_none:'#' }}" alt="Author Photo" class="w-10 h-10 rounded-full object-cover mr-3" onerror="this.src='{% static 'default_profile_picture.avif' %}'">
+                                <div>
+                                    <p class="text-sm font-semibold">{{ user.username }}</p>
+                                    <p class="text-xs text-gray-400">Author</p>
+                                </div>
+                            {% elif user.readerprofile %}
+                                <img src="{{ user.readerprofile.profile_photo|default_if_none:'#' }}" alt="Reader Photo" class="w-10 h-10 rounded-full object-cover mr-3" onerror="this.src='{% static 'default_profile_picture.avif' %}'">
+                                <div>
+                                    <p class="text-sm font-semibold">{{ user.username }}</p>
+                                    <p class="text-xs text-gray-400">Reader</p>
+                                </div>
+                            {% else %}
+                                <img src="{% static 'default_profile_picture.avif' %}" alt="Default Profile Photo" class="w-10 h-10 rounded-full object-cover mr-3">
+                                <div>
+                                    <p class="text-sm font-semibold">{{ user.username }}</p>
+                                    <p class="text-xs text-gray-400">Reader</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% if user.author and user.author.is_approved %}
+                            <a href="{% url 'author_profile' author_id=user.author.id %}" class="block px-4 py-2 text-sm hover:bg-gray-600">My Profile</a>
+                            <a href="{% url 'author_edit' author_id=user.author.id %}" class="block px-4 py-2 text-sm hover:bg-gray-600">Edit Profile</a>
+                            <a href="{% url 'author_settings' author_id=user.author.id %}" class="block px-4 py-2 text-sm hover:bg-gray-600">Settings</a>
+                            <a href="{% url 'author_delete' author_id=user.author.id %}" class="block px-4 py-2 text-sm hover:bg-gray-600 text-red-400">Delete Profile</a>
+                        {% else %}
+                            {% if user.author and user.author.has_applied_for_author %}
+                                <span class="block px-4 py-2 text-sm text-gray-400">Author application pending</span>
+                            {% endif %}
+                            <a href="{% url 'reader_profile' %}" class="block px-4 py-2 text-sm hover:bg-gray-600">My Profile</a>
+                            <a href="{% url 'reader_edit' %}" class="block px-4 py-2 text-sm hover:bg-gray-600">Edit Profile</a>
+                            <a href="{% url 'reader_setting' %}" class="block px-4 py-2 text-sm hover:bg-gray-600">Settings</a>
+                            <a href="{% url 'reader_delete' %}" class="block px-4 py-2 text-sm hover:bg-gray-600 text-red-400">Delete Profile</a>
+                        {% endif %}
+                        
+                        <a href="{% url 'account_logout' %}" class="block px-4 py-2 text-sm hover:bg-gray-600">Logout</a>
+                    </div>
+                </div>
+            {% else %}
+                <a href="{% url 'account_login' %}" class="text-sm hover:text-teal-400 transition duration-200">Login</a>
+                <a href="{% url 'account_signup' %}" class="text-sm hover:text-teal-400 transition duration-200">Sign Up</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Sidebar (Mobile and Desktop Left) -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-gray-800 shadow-lg z-30">
+        <div class="p-4 space-y-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold">Kahaniya</h2>
+                <button id="closeSidebar" class="text-gray-300 hover:text-teal-400">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            {% if user.is_authenticated %}
+                <!-- Following Section -->
+                <div class="bg-gray-700 p-3 rounded-lg">
+                    <h3 class="text-md font-semibold mb-2 text-teal-400 flex items-center">
+                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        Following
+                    </h3>
+                    <ul class="space-y-2 text-sm">
+                        {% for follow in request.user.following.all %}
+                            <li class="flex items-center gap-2">
+                                {% if follow.author.profile_photo %}
+                                    <img src="{{ follow.author.profile_photo.url|default_if_none:'#' }}" class="w-6 h-6 rounded-full object-cover" alt="{{ follow.author.name }}"
+                                         onerror="this.src='{% static 'default_profile_picture.avif' %}'">
+                                {% else %}
+                                    <div class="w-6 h-6 rounded-full bg-teal-500 flex items-center justify-center text-xs">{{ follow.author.name|slice:":1"|upper }}</div>
+                                {% endif %}
+                                <a href="{% url 'public_author_profile' username=follow.author.user.username %}" class="hover:text-teal-400">{{ follow.author.name }}</a>
+                            </li>
+                        {% empty %}
+                            <li class="text-gray-400">You are not following any authors.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Category Filter Section -->
+                <div class="bg-gray-700 p-3 rounded-lg">
+                    <h3 class="text-md font-semibold mb-2 text-teal-400 flex items-center">
+                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1m-4 8H3m4 8h14" />
+                        </svg>
+                        Categories
+                    </h3>
+                    <ul class="space-y-2 text-sm">
+                        <li>
+                            <a href="{% url 'blog_home' %}" 
+                               class="hover:text-teal-400 {% if not selected_category %}text-teal-500 font-bold{% endif %}">
+                                All
+                            </a>
+                        </li>
+                        {% for code, name in categories.items %}
+                            <li>
+                                <a href="{% url 'blog_home_by_category' category=code %}" 
+                                   class="hover:text-teal-400 {% if selected_category == code %}text-teal-500 font-bold{% endif %}">
+                                    {{ name }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Quick Links Section -->
+                <div class="bg-gray-700 p-3 rounded-lg">
+                    <h3 class="text-md font-semibold mb-2 text-teal-400 flex items-center">
+                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Quick Links
+                    </h3>
+                    <ul class="space-y-2 text-sm">
+                        <li>
+                            <a href="{% url "help" %}" class="hover:text-teal-400">Help</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'contact' %}" class="hover:text-teal-400">Contact</a>
+                        </li>
+                        <li>
+                            {% if user.author and user.author.is_approved %}
+                                <a href="{% url 'author_settings' author_id=user.author.id %}" class="hover:text-teal-400">Settings</a>
+                            {% else %}
+                                <a href="{% url 'reader_setting' %}" class="hover:text-teal-400">Settings</a>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Recent Posts -->
+                <div class="bg-gray-700 p-3 rounded-lg">
+                    <h3 class="text-md font-semibold mb-2 text-teal-400 flex items-center">
+                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253" />
+                        </svg>
+                        Recent Posts
+                    </h3>
+                    <ul class="space-y-2 text-sm">
+                        {% for recent_post in recent_posts %}
+                            <li>
+                                {% if recent_post.id %}
+                                    <a href="{% url 'blog_detail' recent_post.id %}" class="text-white hover:text-teal-400">{{ recent_post.title|truncatechars:30 }}</a>
+                                {% else %}
+                                    <span class="text-teal-400">{{ recent_post.title|truncatechars:30 }} (unpublished)</span>
+                                {% endif %}
+                            </li>
+                        {% empty %}
+                            <li class="text-gray-400">No recent posts available.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% else %}
+                <div class="text-gray-400">
+                    <p class="mb-4">Please log in to view your followed authors, categories, and more.</p>
+                    <a href="{% url 'account_login' %}" class="inline-block px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-semibold hover:bg-teal-600 transition duration-200">
+                        Login
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </aside>
+
+    <main class="flex-grow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:grid lg:grid-cols-12 lg:gap-8">
+            <!-- Left Sidebar (Desktop) -->
+            <aside class="lg:col-span-2 hidden lg:block">
+                <div class="bg-gray-800 p-4 rounded-lg shadow space-y-6">
+                    <!-- Following -->
+                    <div>
+                        <h2 class="text-lg font-semibold mb-2 text-teal-400 flex items-center">
+                            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            Following
+                        </h2>
+                        <ul class="space-y-2 text-sm">
+                            {% if user.is_authenticated %}
+                                {% for follow in request.user.following.all %}
+                                    <li class="flex items-center gap-2">
+                                        {% if follow.author.profile_photo %}
+                                            <img src="{{ follow.author.profile_photo.url|default_if_none:'#' }}" class="w-6 h-6 rounded-full object-cover" alt="{{ follow.author.name }}"
+                                                 onerror="this.src='{% static 'default_profile_picture.avif' %}'">
+                                        {% else %}
+                                            <div class="w-6 h-6 rounded-full bg-teal-500 flex items-center justify-center text-xs">{{ follow.author.name|slice:":1"|upper }}</div>
+                                        {% endif %}
+                                        <a href="{% url 'public_author_profile' username=follow.author.user.username %}" class="hover:text-teal-400">{{ follow.author.name }}</a>
+                                    </li>
+                                {% empty %}
+                                    <li class="text-gray-400">You are not following any authors.</li>
+                                {% endfor %}
+                            {% endif %}
+                        </ul>
+                    </div>
+
+                    <!-- Categories -->
+                    <div>
+                        <h2 class="text-lg font-semibold mb-2 text-teal-400 flex items-center">
+                            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1m-4 8H3m4 8h14" />
+                            </svg>
+                            Categories
+                        </h2>
+                        <ul class="space-y-2 text-sm">
+                            <li>
+                                <a href="{% url 'blog_home' %}" 
+                                   class="hover:text-teal-400 {% if not selected_category %}text-teal-500 font-bold{% endif %}">
+                                    All
+                                </a>
+                            </li>
+                            {% for code, name in categories.items %}
+                                <li>
+                                    <a href="{% url 'blog_home_by_category' category=code %}"
+                                       class="hover:text-teal-400 {% if selected_category == code %}text-teal-500 font-bold{% endif %}">
+                                        {{ name }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- Quick Links -->
+                    <div>
+                        <h2 class="text-lg font-semibold mb-2 text-teal-400 flex items-center">
+                            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Quick Links
+                        </h2>
+                        <ul class="space-y-2 text-sm">
+                            <li>
+                                <a href="{%url "help"%}" class="hover:text-teal-400">Help</a>
+                            </li>
+                            <li>
+                                <a href="{% url "contact" %}" class="hover:text-teal-400">Contact</a>
+                            </li>
+                            <li>
+                                {% if user.author and user.author.is_approved %}
+                                    <a href="{% url 'author_settings' author_id=user.author.id %}" class="hover:text-teal-400">Settings</a>
+                                {% else %}
+                                    <a href="{% url 'reader_setting' %}" class="hover:text-teal-400">Settings</a>
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Recent Posts -->
+                    <div>
+                        <h2 class="text-lg font-semibold mb-2 text-teal-400 flex items-center">
+                            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253" />
+                            </svg>
+                            Recent Posts
+                        </h2>
+                        <ul class="space-y-2 text-sm">
+                            {% for recent_post in recent_posts %}
+                                <li>
+                                    {% if recent_post.id %}
+                                        <a href="{% url 'blog_detail' recent_post.id %}" class="text-white hover:text-teal-400">{{ recent_post.title|truncatechars:30 }}</a>
+                                    {% else %}
+                                        <span class="text-teal-400">{{ recent_post.title|truncatechars:30 }} (unpublished)</span>
+                                    {% endif %}
+                                </li>
+                            {% empty %}
+                                <li class="text-gray-400">No recent posts available.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <div class="lg:col-span-8 w-full">
+                {% block content %}
+                {% endblock %}
+            </div>
+
+            <!-- Author Status (Right Sidebar) -->
+            <aside class="lg:col-span-2 hidden lg:block">
+                <div class="bg-gray-800 p-4 rounded-lg shadow">
+                    <h2 class="text-lg font-semibold mb-2 text-teal-400 flex items-center">
+                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Author Status
+                    </h2>
+                    {% if user.is_authenticated %}
+                        {% if user.author and user.author.is_ban or user.readerprofile and user.readerprofile.is_ban %}
+                            <p class="text-sm text-red-400">You are banned</p>
+                        {% else %}
+                            {% if user.author %}
+                                {% if user.author.is_approved %}
+                                    <p class="text-sm text-green-400">Author Status: Active</p>
+                                    <a href="{% url 'create_blog' %}" class="inline-block mt-2 px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-semibold hover:bg-teal-600 transition duration-200">
+                                        Create Post
+                                    </a>
+                                {% elif user.author.has_applied_for_author %}
+                                    <p class="text-sm text-yellow-400">Author Status: Pending</p>
+                                {% elif user.author.is_rejected %}
+                                    <p class="text-sm text-red-400">Author Status: Rejected</p>
+                                    <a href="{% url 'create_author' %}" class="inline-block mt-2 px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-semibold hover:bg-teal-600 transition duration-200">
+                                        Reapply as Author
+                                    </a>
+                                {% else %}
+                                    <p class="text-sm text-gray-400">Author Status: Not Applied</p>
+                                    <a href="{% url 'create_author' %}" class="inline-block mt-2 px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-semibold hover:bg-teal-600 transition duration-200">
+                                        Create Author
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <p class="text-sm text-gray-400">Author Status: Not Applied</p>
+                                <a href="{% url 'create_author' %}" class="inline-block mt-2 px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-semibold hover:bg-teal-600 transition duration-200">
+                                    Create Author
+                                </a>
+                                {% if user.is_staff %}
+                                    <a href="{% url 'create_blog' %}" class="inline-block mt-2 px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-semibold hover:bg-teal-600 transition duration-200">
+                                        Create Post
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% else %}
+                        <p class="text-sm text-gray-400">Please log in to view your author status.</p>
+                        <a href="{% url 'account_login' %}" class="inline-block mt-2 px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-semibold hover:bg-teal-600 transition duration-200">
+                            Login
+                        </a>
+                    {% endif %}
+                </div>
+            </aside>
+        </div>
+
+        {% block extra_js %}
+        {% endblock %}
+    </main>
+
+    <footer class="bg-gray-800 text-center p-4 text-sm text-gray-500">
+        © 2025 Kahaniya. All rights reserved.
+    </footer>
+
+    <script>
+        // Toggle mobile search
+        const mobileSearchToggle = document.getElementById('mobileSearchToggle');
+        const mobileSearch = document.getElementById('mobileSearch');
+
+        mobileSearchToggle.onclick = function() {
+            mobileSearch.classList.toggle('hidden');
+        };
+
+        // Toggle sidebar
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const closeSidebar = document.getElementById('closeSidebar');
+
+        sidebarToggle.onclick = function() {
+            sidebar.classList.toggle('open');
+        };
+
+        closeSidebar.onclick = function() {
+            sidebar.classList.remove('open');
+        };
+
+        // Toggle profile dropdown
+        const profileToggle = document.getElementById('profileToggle');
+        const profileDropdown = document.querySelector('.profile-dropdown');
+
+        profileToggle.onclick = function() {
+            profileDropdown.classList.toggle('open');
+        };
+
+        // Toggle saved posts submenu
+        const savedPostsToggle = document.getElementById('savedPostsToggle');
+        const savedPostsSubmenu = document.querySelector('.saved-posts-submenu');
+
+        savedPostsToggle.onclick = function() {
+            savedPostsSubmenu.classList.toggle('open');
+        };
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!profileToggle.contains(event.target) && !profileDropdown.contains(event.target)) {
+                profileDropdown.classList.remove('open');
+                savedPostsSubmenu.classList.remove('open');
+            }
+            if (!mobileSearchToggle.contains(event.target) && !mobileSearch.contains(event.target)) {
+                mobileSearch.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

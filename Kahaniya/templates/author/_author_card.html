@@ -1,0 +1,28 @@
+<div class="flex items-center justify-between bg-gray-700 shadow rounded-lg p-4 mb-4">
+    <div class="flex items-center gap-4">
+      <img src="{{ author.profile_photo.url }}" alt="{{ author.name }}" class="w-10 h-10 rounded-full object-cover">
+      <div>
+        <p class="text-sm font-semibold">{{ author.name }}</p>
+        <p class="text-xs text-gray-500">@{{ author.user.username }}</p>
+      </div>
+    </div>
+    {% if user.is_authenticated and user.author.id != author.id %}
+   {% if author.id in user_following_ids %}
+    <form action="{% url 'unfollow_author' author_id=author.id %}" method="post">
+      {% csrf_token %}
+      <button type="submit" class="text-white bg-gray-700 hover:bg-gray-600 px-3 py-1 text-xs rounded-full">
+        Unfollow
+      </button>
+    </form>
+  {% else %}
+    <form action="{% url 'follow_author' author_id=author.id %}" method="post">
+      {% csrf_token %}
+      <button type="submit" class="text-white bg-teal-600 hover:bg-teal-500 px-3 py-1 text-xs rounded-full">
+        Follow
+      </button>
+    </form>
+  {% endif %}
+  {% endif %}
+   
+</div>
+  

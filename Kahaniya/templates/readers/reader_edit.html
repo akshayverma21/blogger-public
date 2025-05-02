@@ -1,0 +1,75 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-white mb-6">Edit Reader Profile</h1>
+    {% include '_messages.html' %}
+
+    <div class="max-w-lg mx-auto bg-gray-800 p-6 rounded-lg shadow-lg">
+        
+        {% if form.instance.profile_photo %}
+            <div class="mb-4">
+                <p class="text-gray-300 mb-2">Current Profile Photo:</p>
+                {% if form.instance.profile_photo and form.instance.profile_photo.url %}
+                    <img src="{{ form.instance.profile_photo.url }}" alt="Profile Photo"
+                         class="w-32 h-32 object-cover rounded-full border border-gray-500">
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-300" for="id_bio">Name</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <p class="text-red-500 text-sm">{{ form.name.errors.0 }}</p>
+                {% endif %}
+            </div>
+        
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-300" for="id_bio">Bio</label>
+                {{ form.bio }}
+                {% if form.bio.errors %}
+                    <p class="text-red-500 text-sm">{{ form.bio.errors.0 }}</p>
+                {% endif %}
+            </div>
+        
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-300" for="id_dob">Date of Birth</label>
+                {{ form.dob }}
+                {% if form.dob.errors %}
+                    <p class="text-red-500 text-sm">{{ form.dob.errors.0 }}</p>
+                {% endif %}
+            </div>
+        
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-300" for="id_gender">Gender</label>
+                {{ form.gender }}
+                {% if form.gender.errors %}
+                    <p class="text-red-500 text-sm">{{ form.gender.errors.0 }}</p>
+                {% endif %}
+            </div>
+        
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-300" for="id_profile_photo">Change Profile Photo</label>
+                {{ form.profile_photo }}
+                {% if form.profile_photo.errors %}
+                    <p class="text-red-500 text-sm">{{ form.profile_photo.errors.0 }}</p>
+                {% endif %}
+            </div>
+        
+            <div class="flex space-x-4 mt-4">
+                <button type="submit" class="flex-1 bg-teal-500 text-black px-4 py-2 rounded-lg hover:bg-teal-600 transition duration-200">
+                    Save Changes
+                </button>
+                <a href="{% url 'reader_profile' %}"
+                   class="flex-1 text-center bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

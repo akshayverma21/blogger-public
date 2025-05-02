@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Kahaniya | {% block title %}Auth{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #121212;
+        }
+    </style>
+</head>
+<body class="text-white font-sans min-h-screen flex flex-col">
+    <nav class="bg-gray-800 p-4 shadow flex items-center justify-between">
+        <div class="text-xl font-bold">
+            <a href="{% url 'blog_home' %}">Kahaniya</a>
+        </div>
+        <div class="flex items-center space-x-4">
+            {% if user.is_authenticated %}
+                <a href="{% url 'account_logout' %}" class="text-sm hover:text-teal-400 transition duration-200">Logout</a>
+            {% else %}
+                <a href="{% url 'account_login' %}" class="text-sm hover:text-teal-400 transition duration-200">Login</a>
+                <a href="{% url 'account_signup' %}" class="text-sm hover:text-teal-400 transition duration-200">Sign Up</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="flex-grow">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="bg-gray-800 text-center p-4 text-sm text-gray-500">
+        © 2025 Kahaniya. All rights reserved.
+    </footer>
+</body>
+</html>

@@ -1,0 +1,205 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<div class="w-full max-w-3xl px-4 sm:px-6 lg:px-8 py-8 mx-auto">
+    <!-- Messages -->
+    {% include '_messages.html' %}
+
+    <!-- Category Filter -->
+    <div class="mb-6">
+        <h2 class="text-lg font-semibold text-white mb-3">Categories</h2>
+        <div class="flex flex-wrap gap-3">
+            <a href="{% url 'blog_home' %}?sort={{ sort_by }}" 
+               class="px-3 py-1 rounded-md text-sm {% if not selected_category %}bg-teal-600 text-white{% else %}bg-gray-700 text-gray-200{% endif %} hover:bg-teal-500">
+                All
+            </a>
+            {% for code, name in categories.items %}
+                <a href="{% url 'blog_home_by_category' category=code %}?sort={{ sort_by }}" 
+                   class="px-3 py-1 rounded-md text-sm {% if selected_category == code %}bg-teal-600 text-white{% else %}bg-gray-700 text-gray-200{% endif %} hover:bg-teal-500">
+                    {{ name|title }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Sorting Options -->
+    <div class="mb-6 flex justify-start items-center">
+        <div class="text-gray-300">
+            Sort by:
+            <a href="{% if selected_category %}{% url 'blog_home_by_category' category=selected_category %}{% else %}{% url 'blog_home' %}{% endif %}?sort=newest" 
+               class="text-teal-400 hover:text-teal-500 {% if sort_by == 'newest' %}font-bold{% endif %} mx-2">Newest</a> |
+            <a href="{% if selected_category %}{% url 'blog_home_by_category' category=selected_category %}{% else %}{% url 'blog_home' %}{% endif %}?sort=latest_comment" 
+               class="text-teal-400 hover:text-teal-500 {% if sort_by == 'latest_comment' %}font-bold{% endif %} mx-2">Latest Comment</a> |
+            <a href="{% if selected_category %}{% url 'blog_home_by_category' category=selected_category %}{% else %}{% url 'blog_home' %}{% endif %}?sort=most_likes" 
+               class="text-teal-400 hover:text-teal-500 {% if sort_by == 'most_likes' %}font-bold{% endif %} mx-2">Most Likes</a> |
+            <a href="{% if selected_category %}{% url 'blog_home_by_category' category=selected_category %}{% else %}{% url 'blog_home' %}{% endif %}?sort=most_comments" 
+               class="text-teal-400 hover:text-teal-500 {% if sort_by == 'most_comments' %}font-bold{% endif %} mx-2">Most Comments</a>
+        </div>
+    </div>
+
+    <!-- Blog List -->
+    {% for blog in page_obj %}
+        <div class="relative bg-gray-800 p-4 rounded-lg mb-4 text-white hover:bg-gray-700 transition duration-200">
+            <!-- Dropdown for edit/delete (for post owner) -->
+            {% if blog.author.user == request.user or request.user.is_staff %}
+            <div class="absolute top-2 right-2">
+                <div class="relative inline-block text-left">
+                    <button class="text-gray-400 hover:text-teal-400 text-lg focus:outline-none" onclick="toggleDropdown(event, 'dropdown-{{ blog.id }}')">
+                        ⋮
+                    </button>
+                    <div id="dropdown-{{ blog.id }}" class="hidden absolute right-0 mt-1 w-24 bg-gray-900 border border-gray-600 rounded-lg shadow-lg z-10">
+                        <a href="{% url 'edit_blog' blog.id %}" class="block px-3 py-1 text-sm text-white hover:bg-gray-800">Edit</a>
+                        <a href="{% url 'delete_blog' blog.id %}" class="block px-3 py-1 text-sm text-white hover:bg-gray-800">Delete</a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Blog Title -->
+            <h2 class="text-xl font-extrabold mb-1">
+                <a href="{% url 'blog_detail' blog.id %}" class="hover:text-teal-400">{{ blog.title }}</a>
+            </h2>
+            
+            <!-- Author and Date -->
+            <a href="{% url 'public_author_profile' username=blog.author.user.username %}">
+                <p class="text-xs text-gray-200 mb-2">By {{ blog.author.name }} · {{ blog.created_at|date:"M d, Y" }}</p>
+            </a>
+
+            <!-- Category Button with Dynamic Colors and NSFW Tag -->
+            <div class="flex items-center gap-2 mb-3">
+                <span class="inline-flex items-center text-sm font-bold px-2 py-1 rounded-md text-white
+                    {% if blog.category_choices == 'A' %}bg-red-600
+                    {% elif blog.category_choices == 'F' %}bg-blue-600
+                    {% elif blog.category_choices == 'FT' %}bg-purple-600
+                    {% elif blog.category_choices == 'Lv' %}bg-pink-600
+                    {% else %}bg-blue-800{% endif %}">
+                    {{ blog.get_category_choices_display|default:"No Category" }}
+                </span>
+                {% if blog.author and blog.author.is_approved %}
+                    <span class="inline-flex items-center text-sm font-semibold px-2 py-1 rounded-md bg-teal-600 text-white cursor-pointer relative group">
+                        Author
+                        <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block bg-gray-800 text-xs text-teal-400 rounded px-2 py-1 shadow-lg z-20">
+                            Verified Author
+                        </span>
+                    </span>
+                {% endif %}
+                {% if blog.category_choices == 'A' %}
+                    <span class="inline-flex items-center text-sm font-bold px-2 py-1 rounded-md bg-red-800 text-white">NSFW</span>
+                {% endif %}
+            </div>
+
+            <!-- Blog Image with NSFW Overlay and Blur -->
+            {% if blog.blog_image %}
+                <div class="relative mb-3 w-full max-h-95 aspect-video">
+                    <img id="img-{{ blog.id }}" src="{{ blog.blog_image.url }}" alt="{{ blog.title }}" 
+                         class="rounded-lg w-full h-full object-cover {% if blog.category_choices == 'A' %}blur-sm{% endif %}">
+                    {% if blog.category_choices == 'A' %}
+                        <div id="nsfw-overlay-{{ blog.id }}" 
+                             class="absolute inset-0 bg-black/70 rounded-lg flex items-center justify-center cursor-pointer" 
+                             onclick="document.getElementById('nsfw-overlay-{{ blog.id }}').classList.add('hidden'); document.getElementById('img-{{ blog.id }}').classList.remove('blur-sm')">
+                            <span class="text-red-500 font-bold text-lg">NSFW</span>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <!-- Blog Content Preview -->
+            <p class="text-gray-200 text-sm mb-3">{{ blog.content|slice:":100" }}...</p>
+
+            <!-- Like/Dislike & Comment Display -->
+            <div class="flex items-center justify-between text-xs text-gray-400">
+                <div class="flex gap-2 items-center">
+                    {% if user.is_authenticated %}
+                        <form method="POST" action="{% url 'toggle_like' 'Kahaniya' 'blogpost' blog.id %}" class="inline-flex items-center">
+                            {% csrf_token %}
+                            <button class="flex items-center gap-1 transition duration-200 
+                                {% if blog.user_liked %}text-teal-400{% else %}hover:text-teal-400{% endif %}">
+                                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                </svg>
+                                <span>{{ blog.liked_count }}</span>
+                            </button>
+                        </form>
+                    {% else %}
+                        <button class="flex items-center gap-1 hover:text-teal-400 transition duration-200 opacity-50 cursor-not-allowed" 
+                                disabled title="Log in to like">
+                            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                            </svg>
+                            <span>{{ blog.liked_count }}</span>
+                        </button>
+                    {% endif %}
+                    <a href="{% url 'blog_detail' blog.id %}" class="flex items-center gap-1 hover:text-teal-400 transition duration-200">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <span>{{ blog.comment_count }}</span>
+                    </a>
+                </div>
+                <a href="{% url 'blog_detail' blog.id %}" class="text-teal-400 hover:text-teal-500 transition duration-200">Read More</a>
+            </div>
+        </div>
+    {% empty %}
+        <div class="text-center text-gray-400">
+            <p class="text-base">No blogs found.</p>
+            {% if user.is_authenticated %}
+                {% with author=request.user.author %}
+                    {% if author and author.is_approved %}
+                        <a href="{% url 'create_blog' %}" class="mt-2 inline-block text-teal-400 hover:text-teal-500 transition duration-200">Create a post</a>
+                    {% elif author %}
+                        <p class="mt-2 text-sm">Your author application is pending approval.</p>
+                    {% else %}
+                        <a href="{% url 'create_author' %}" class="mt-2 inline-block text-teal-400 hover:text-teal-500 transition duration-200">Apply to become an author</a>
+                    {% endif %}
+                    <!-- Debug output -->
+                   
+                {% endwith %}
+            {% else %}
+                <a href="{% url 'account_login' %}?next={% url 'create_blog' %}" 
+                   class="mt-2 inline-block text-teal-400 hover:text-teal-500 transition duration-200">Log in to create a post</a>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <!-- Pagination -->
+    {% if page_obj.has_previous or page_obj.has_next %}
+        <div class="flex justify-center gap-4 mt-6">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&sort={{ sort_by }}{% if selected_category %}&category={{ selected_category }}{% endif %}" 
+                   class="bg-teal-500 px-4 py-2 rounded-lg text-sm font-semibold text-white hover:bg-teal-600 transition duration-200">
+                    Previous
+                </a>
+            {% endif %}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&sort={{ sort_by }}{% if selected_category %}&category={{ selected_category }}{% endif %}" 
+                   class="bg-teal-500 px-4 py-2 rounded-lg text-sm font-semibold text-white hover:bg-teal-600 transition duration-200">
+                    Next
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleDropdown(event, dropdownId) {
+    event.preventDefault();
+    const dropdown = document.getElementById(dropdownId);
+    dropdown.classList.toggle('hidden');
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    const dropdowns = document.querySelectorAll('[id^="dropdown-"]');
+    dropdowns.forEach(dropdown => {
+        if (!dropdown.parentElement.contains(event.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+});
+</script>
+{% endblock %}

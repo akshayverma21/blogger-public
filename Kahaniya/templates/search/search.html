@@ -1,0 +1,48 @@
+{% extends 'layout.html' %}
+{% load humanize %}  <!-- For timesince filter -->
+
+{% block content %}
+<h2 class="text-2xl font-bold mb-6 text-white">Search Results for "{{ query }}"</h2>
+
+{% if search %}
+  <ul class="space-y-4">
+    {% for blog in search %}
+      <li class="flex gap-4 p-4 bg-gray-800 border border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+        <!-- Blog Thumbnail -->
+        {% if blog.blog_image %}
+          <a href="{% url 'blog_detail' blog.id %}" class="flex-shrink-0">
+            <img src="{{ blog.blog_image.url }}" alt="{{ blog.title|default:'Blog Image' }}" class="w-32 h-18 object-cover rounded-md hover:opacity-90 transition-opacity" loading="lazy">
+          </a>
+        {% else %}
+          <div class="w-32 h-18 bg-gray-600 rounded-md flex items-center justify-center text-gray-400 text-sm">
+            No Image
+          </div>
+        {% endif %}
+        <!-- Blog Details -->
+        <div class="flex-1">
+          <a href="{% url 'blog_detail' blog.id %}" class="text-teal-400 hover:text-teal-500 font-semibold text-lg leading-tight">{{ blog.title }}</a>
+          <div class="text-sm text-gray-400 mt-1 flex items-center gap-2">
+            <!-- Author Profile Photo -->
+            {% if blog.author.profile_photo %}
+              <img src="{{ blog.author.profile_photo.url }}" alt="{{ blog.author.user.username }}" class="w-6 h-6 rounded-full object-cover">
+            {% else %}
+              <div class="w-6 h-6 rounded-full bg-gray-500 flex items-center justify-center text-white text-xs font-bold">
+                {{ blog.author.user.username|first|upper }}
+              </div>
+            {% endif %}
+            <!-- Clickable Author Name -->
+            <a href="{% url 'public_author_profile' blog.author.user.username %}" class="text-gray-400 hover:text-teal-500">{{ blog.author.name|default:blog.author.user.username }}</a>
+            <span class="text-gray-500">•</span>
+            <span>{{ blog.created_at|timesince }} ago</span>
+          </div>
+          {% if blog.description %}
+            <p class="text-sm text-gray-400 mt-1 line-clamp-2">{{ blog.description|truncatechars:100 }}</p>
+          {% endif %}
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="text-gray-400 text-lg">No results found.</p>
+{% endif %}
+{% endblock %}

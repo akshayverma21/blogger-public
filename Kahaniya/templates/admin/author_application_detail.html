@@ -1,0 +1,54 @@
+
+{% extends 'layout.html' %}
+
+{% block content %}
+{% include '_messages.html' %}
+<div class="max-w-4xl mx-auto mt-12 p-8 bg-gray-400 shadow-xl rounded-xl">
+    <h2 class="text-3xl font-bold text-gray-900 mb-8 flex items-center">
+        <span class="mr-2">📋</span> Author Application Review
+    </h2>
+
+    <div class="space-y-6">
+        <!-- Applicant Info Card -->
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <span class="mr-2">👤</span> Applicant Information
+            </h3>
+            <div class="grid grid-cols-1 gap-3 text-gray-700">
+                <p><span class="font-medium">Username:</span> {{ application.user.username }}</p>
+                <p><span class="font-medium">Email:</span> {{ application.user.email }}</p>
+            </div>
+        </div>
+
+        <!-- Application Details Card -->
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <span class="mr-2">📝</span> Application Details
+            </h3>
+            <div class="grid grid-cols-1 gap-3 text-gray-700">
+                <p><span class="font-medium">Full Name:</span> {{ application.name }}</p>
+                <p><span class="font-medium">Bio:</span> {{ application.bio|truncatewords:50 }}</p>
+                <p>
+                    <span class="font-medium">Portfolio/Website:</span>
+                    {% if application.website %}
+                        <a href="{{ application.website }}" class="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">{{ application.website }}</a>
+                    {% else %}
+                        <span class="text-gray-500 italic">Not provided</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <form method="post" class="flex justify-end gap-4 mt-6">
+            {% csrf_token %}
+            <button type="submit" name="action" value="approve" class="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2.5 rounded-lg transition-colors duration-200 flex items-center">
+                <span class="mr-2">✅</span> Approve
+            </button>
+            <button type="submit" name="action" value="reject" class="bg-red-600 hover:bg-red-700 text-white font-medium px-6 py-2.5 rounded-lg transition-colors duration-200 flex items-center">
+                <span class="mr-2">❌</span> Reject
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

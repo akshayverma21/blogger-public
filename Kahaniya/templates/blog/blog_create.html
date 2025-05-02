@@ -1,0 +1,82 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 max-w-3xl">
+  <h1 class="text-4xl font-bold text-white dark:text-gray-100 mb-8 text-center">Create a New Story</h1>
+  {% include '_messages.html' %}
+
+  <!-- Blog Post Creation Form -->
+  <form method="POST" enctype="multipart/form-data" class="bg-gray-700 dark:bg-gray-800 p-8 rounded-xl shadow-lg space-y-6">
+    {% csrf_token %}
+
+    <!-- Form Errors -->
+    {% if form.errors %}
+      <div class="mb-6 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg">
+        <p class="font-semibold">Please correct the errors below:</p>
+        <ul class="list-disc ml-5">
+          {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+              <li>{{ field|title }}: {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <!-- Form Fields -->
+    <div>
+      <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-white-700 dark:text-gray-300 mb-2">Title</label>
+      {{ form.title }}
+    </div>
+
+    <div>
+      <label for="{{ form.content.id_for_label }}" class="block text-sm font-medium text-white-700 dark:text-gray-300 mb-2">Content</label>
+      {{ form.content }}
+    </div>
+
+    <div>
+      <label for="{{ form.blog_image.id_for_label }}" class="block text-sm font-medium text-white-700 dark:text-gray-300 mb-2">Featured Image (Optional)</label>
+      {{ form.blog_image }}
+      <!-- Image Preview -->
+      <div id="image-preview" class="mt-4 hidden">
+        <img id="preview-img" src="#" alt="Image Preview" class="w-full h-auto max-h-90 object-cover rounded-lg">
+      </div>
+    </div>
+
+    <div>
+      <label for="{{ form.category_choices.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
+      {{ form.category_choices }}
+      {% for error in form.category_choices.errors %}
+        <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <!-- Submit Button -->
+    <div class="flex justify-end space-x-4">
+      <a href="{% url 'blog_home' %}" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-200">Cancel</a>
+      <button type="submit" class="px-6 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition duration-200">Publish Story</button>
+    </div>
+  </form>
+</div>
+
+<!-- JavaScript for Image Preview -->
+<script>
+  document.getElementById('{{ form.blog_image.id_for_label }}').addEventListener('change', function(event) {
+    const preview = document.getElementById('image-preview');
+    const previewImg = document.getElementById('preview-img');
+    const file = event.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        previewImg.src = e.target.result;
+        preview.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    } else {
+      preview.classList.add('hidden');
+    }
+  });
+</script>
+{% endblock %}

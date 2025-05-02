@@ -1,0 +1,143 @@
+/* Blog\Blog\static\css\styles.css */
+
+/* Import Tailwind (if using a custom build, otherwise remove if using CDN) */
+/* @import "tailwindcss"; */
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Inter:wght@400;500&display=swap');
+
+/* Base Styles */
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h3 {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Comment Section */
+.comment-container {
+  transition: background-color 0.2s ease;
+  color: var(--offwhite-100); /* #F5F5F5 */
+}
+
+.comment-container img {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.comment-container p {
+  line-height: 1.4;
+  color: var(--offwhite-100); /* #F5F5F5 */
+}
+
+.comment-container button {
+  outline: none;
+}
+
+.comment-container svg {
+  transition: transform 0.2s ease;
+}
+
+.comment-container .rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* Reply Form */
+.reply-form textarea {
+  transition: border-color 0.2s ease;
+}
+
+.reply-form textarea:focus {
+  border-color: var(--orange-500); /* #FF4F00 */
+}
+
+.reply-form-buttons button {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Dark Mode (aligned with your charcoal background) */
+@media (prefers-color-scheme: dark) {
+  .comment-container {
+    background-color: var(--charcoal-900); /* #1A1A1A */
+    color: var(--offwhite-100); /* #F5F5F5 */
+  }
+
+  .comment-container img {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .comment-container p {
+    color: var(--offwhite-100); /* #F5F5F5 */
+  }
+
+  .comment-container .like-count {
+    color: var(--gold-400); /* #D4A017 */
+  }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 640px) {
+  .comment-container {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+  }
+
+  .comment-container.ml-12 {
+    margin-left: 2rem;
+  }
+}
+
+/* FAQ Styles (from Help page) */
+.faq-content {
+  transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.faq-content.open {
+  max-height: 200px; /* Adjust based on content */
+  opacity: 1;
+}
+
+/* Animation Styles */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Additional Styles */
+.container {
+  background: linear-gradient(180deg, rgba(255, 79, 0, 0.1) 0%, rgba(155, 29, 32, 0.1) 100%);
+}
+
+/* Form Inputs (for consistency across Contact, Create, Edit pages) */
+input, textarea, select {
+  transition: border-color 0.2s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--orange-500); /* #FF4F00 */
+}

@@ -1,0 +1,124 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">
+    <div class="bg-gray-900 rounded-xl shadow-2xl p-6">
+        <!-- Profile Header -->
+        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
+            <!-- Profile Picture -->
+            <div class="flex-shrink-0">
+                {% if reader_profile.profile_photo %}
+                    <img src="{{ reader_profile.profile_photo.url }}" alt="{{ reader_profile.user.username }}'s profile photo"
+                         class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-teal-500 object-cover">
+                {% else %}
+                    <img src="{% static 'default_profile_picture.avif' %}" alt="Default Profile Photo"
+                         class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-teal-500 object-cover">
+                {% endif %}
+            </div>
+            <!-- Profile Info -->
+            <div class="flex-1 text-center sm:text-left">
+                <h1 class="text-2xl sm:text-3xl font-bold text-white">{{ reader_profile.user.username }}</h1>
+                <p class="text-gray-400 text-sm mt-2 max-w-2xl">
+                    {% if reader_profile.bio %}
+                        {{ reader_profile.bio }}
+                    {% else %}
+                        <span class="italic">No bio provided.</span>
+                    {% endif %}
+                </p>
+                <p class="text-gray-500 text-sm mt-1">Email: {{ reader_profile.user.email }}</p>
+                <p class="text-gray-500 text-sm">
+                    Gender: {{ reader_profile.gender|title }} | Joined: {{ reader_profile.join_date|date:"F Y" }}
+                </p>
+                {% if reader_profile.dob %}
+                    <p class="text-gray-500 text-sm">Date of Birth: {{ reader_profile.dob|date:"F d, Y" }}</p>
+                {% endif %}
+                <!-- Following Count -->
+                <div class="flex justify-center sm:justify-start mt-4">
+                    <a href="{% url 'reader_following_list' username=reader_profile.user.username %}" 
+                       class="text-gray-300 hover:text-teal-400 transition duration-200">
+                        <span class="font-semibold">{{ reader_profile.user.following.count|default:0 }}</span> 
+                        <span class="text-sm">Following</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="border-b border-gray-700 mb-6">
+            <ul class="flex flex-wrap justify-center sm:justify-start gap-4 text-sm font-medium text-gray-400">
+                <li>
+                    <a href="#overview" 
+                       class="tab-link flex items-center px-4 py-2 border-b-2 border-transparent hover:text-white hover:border-teal-500 transition duration-200 active">
+                        <i class="fas fa-user mr-2"></i> Overview
+                    </a>
+                </li>
+                <li>
+                    <a href="#comments" 
+                       class="tab-link flex items-center px-4 py-2 border-b-2 border-transparent hover:text-white hover:border-teal-500 transition duration-200">
+                        <i class="fas fa-comment mr-2"></i> Comments
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Overview Tab -->
+            <div id="overview" class="tab-pane">
+                <h2 class="text-xl font-semibold text-white mb-4">Overview</h2>
+                <p class="text-gray-400 mb-4">A summary of {{ reader_profile.user.username }}'s activity will be displayed here soon.</p>
+            </div>
+
+            <!-- Comments Tab -->
+            <div id="comments" class="tab-pane hidden">
+                <h2 class="text-xl font-semibold text-white mb-4">Comments</h2>
+                {% if comments %}
+                    <div class="space-y-4">
+                        {% for comment in comments %}
+                            <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+                                <p class="text-gray-400 text-sm">{{ comment.body|truncatewords:20 }}</p>
+                                {% if comment.content_object %}
+                                    <a href="{% url 'blog_detail' comment.content_object.id %}" 
+                                       class="text-teal-500 hover:underline text-sm mt-2 inline-block">View Post</a>
+                                {% else %}
+                                    <p class="text-gray-500 text-sm">Post not available</p>
+                                {% endif %}
+                            </div>
+                        {% empty %}
+                            <p class="text-gray-400 text-sm">No comments yet.</p>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-400 text-sm">No comments yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Tab Switching -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('.tab-link');
+    const panes = document.querySelectorAll('.tab-pane');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            e.preventDefault();
+            tabs.forEach(t => {
+                t.classList.remove('active', 'border-teal-500', 'text-white');
+                t.classList.add('text-gray-400');
+            });
+            panes.forEach(pane => pane.classList.add('hidden'));
+            tab.classList.add('active', 'border-teal-500', 'text-white');
+            tab.classList.remove('text-gray-400');
+            const targetPane = document.querySelector(tab.getAttribute('href'));
+            if (targetPane) {
+                targetPane.classList.remove('hidden');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
